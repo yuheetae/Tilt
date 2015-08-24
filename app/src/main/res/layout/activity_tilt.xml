@@ -1,19 +1,109 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="10sp"
+                android:layout_marginRight="10sp"
+                android:orientation="vertical"
                 tools:context=".TiltActivity">
 
-    <Button
-        android:id="@+id/sensor_button"
-        android:text="Sensor"
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="200dp"
-        android:paddingRight="200dp"/>
+        android:layout_marginTop="10sp"
+        android:textSize="17sp"
+        android:text="Info"/>
 
-</RelativeLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+
+        android:text="Most people when using their smartphones tend to tilt their heads downward. This puts a lot of weight on the neck and with the daily use of smartphones the weight on you neck can potentially be detrimental. Luckily with Tilt you can prevent this. Tilt will notify you when your phone is tilted past a certain angle."/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10sp"
+        android:layout_marginBottom="15sp"
+        android:background="@android:color/darker_gray"/>
+
+    <TextView
+        android:id="@+id/tilt_angle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:text="@string/tilt_angle"/>
+
+    <SeekBar
+        android:id="@+id/seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5sp"
+        android:layout_marginBottom="15sp"
+        android:background="@android:color/darker_gray"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15sp"
+        android:textSize="17sp"
+        android:text="Notification Methods"/>
+
+    <Switch
+        android:id="@+id/headsup_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15sp"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:text="Heads-up Notification"/>
+
+    <Switch
+        android:id="@+id/vibrate_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15sp"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:text="Vibrate"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="5sp"
+        android:layout_marginBottom="15sp"
+        android:background="@android:color/darker_gray"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15sp"
+        android:textSize="17sp"
+        android:text="Disable For Specific Orientation"/>
+
+    <Switch
+        android:id="@+id/portrait_orientation_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15sp"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:text="Portrait"/>
+
+    <Switch
+        android:id="@+id/landscape_orientation_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15sp"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:text="Landscape"/>
+
+
+
+</LinearLayout>

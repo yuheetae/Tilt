@@ -21,15 +21,6 @@
             </intent-filter>
         </activity>
         <service android:name=".SensorService"/>
-        <receiver android:name=".TiltReceiver">
-            <intent-filter>
-                <action android:name="yu.heetae.android.tilt.POWER"/>
-                <action android:name="yu.heetae.android.tilt.SETTINGS"/>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.SCREEN_ON" />
-                <action android:name="android.intent.action.USER_PRESENT" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
