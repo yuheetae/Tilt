@@ -12,7 +12,7 @@ import android.support.v4.app.NotificationCompat;
 /**
  * Created by yu on 7/11/15.
  */
-public class TiltNotification {
+public class TiltNotification {//
 
     private static final String SETTINGS = "yu.heetae.android.tilt.SETTINGS";
     private static final String FIFTEEN = "yu.heetae.android.tilt.FIFTEEN";
