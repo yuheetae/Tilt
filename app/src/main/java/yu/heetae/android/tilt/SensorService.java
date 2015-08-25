@@ -70,6 +70,7 @@ public class SensorService extends Service implements SensorEventListener{
     boolean enablePortrait = true;
     boolean enableLandscape = true;
 
+    public static int preferredTiltAngle;
     public static boolean isHeadsUpEnabled;
     public static boolean isVibrateEnabled;
     public static boolean isPortraitEnabled;
@@ -228,22 +229,21 @@ public class SensorService extends Service implements SensorEventListener{
 
         }
 
-        double tiltAngle = Math.toDegrees(mOrientation[1]);
-        double tiltAngle2 = Math.toDegrees(mOrientation[2]);
+        double tiltAnglePortrait = Math.toDegrees(mOrientation[1]);
+        double tiltAngleLandscape = Math.toDegrees(mOrientation[2]);
 
 
-        Log.i(TAG, Double.toString(tiltAngle2));
 
 
         if(orientation == Surface.ROTATION_0) {
-            if (tiltAngle == 0) {
-                if (1 / tiltAngle > 0 && tiltAngle > -preferredAngle && tiltAngle < 30) {
+            if (tiltAnglePortrait == 0) {
+                if (1 / tiltAnglePortrait > 0 && tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
                     Log.i(TAG, "TILT ALERT");
                     tiltAlert();
                     unregisterSensor();
                 }
             } else {
-                if (tiltAngle > -preferredAngle && tiltAngle < 30) {
+                if (tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
                     Log.i(TAG, "TILT ALERTT");
                     tiltAlert();
                     unregisterSensor();
@@ -251,7 +251,23 @@ public class SensorService extends Service implements SensorEventListener{
             }
         }
 
-        //if(tiltAngle == 0 && !(1/tiltAngle > 0)) Log.i(TAG, "DISREGARD NEGATIVE ZERO");
+        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270) {
+            if (tiltAnglePortrait == 0) {
+                if (1 / tiltAngleLandscape > 0 && tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
+                    Log.i(TAG, "TILT ALERT");
+                    tiltAlert();
+                    unregisterSensor();
+                }
+            } else {
+                if (tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
+                    Log.i(TAG, "TILT ALERTT");
+                    tiltAlert();
+                    unregisterSensor();
+                }
+            }
+        }
+
+
     }
 
     public void tiltAlert() {
@@ -279,47 +295,28 @@ public class SensorService extends Service implements SensorEventListener{
        // Log.i(TAG, "Head is Tilted");
     }
 
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         switch (((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRotation()) {
             case Surface.ROTATION_0:
-                //Log.i(TAG, "NORMAL PORTRAIT");
+                Log.i(TAG, "NORMAL PORTRAIT");
                 orientation = Surface.ROTATION_0;
-                if(sensorState == running && isPortraitEnabled) {
-                    setSensorListeners(mSensorManager);
-                }
-                if(!isPortraitEnabled) {
-                    unregisterSensor();
-                    TiltNotification.update(this, "Pause", -2);
-                }
                 break;
             case Surface.ROTATION_90:
-                //Log.i(TAG, "NORMAL LANDSCAPE");
+                Log.i(TAG, "NORMAL LANDSCAPE");
                 orientation = Surface.ROTATION_90;
-                if(sensorState == running && isLandscapeEnabled) {
-                    setSensorListeners(mSensorManager);
-                }
-                if(!isLandscapeEnabled) {
-                    unregisterSensor();
-                    TiltNotification.update(this, "Pause", -2);
-                }
                 break;
             case Surface.ROTATION_270:
-                //Log.i(TAG, "REVERSE LANDSCAPE");
+                Log.i(TAG, "REVERSE LANDSCAPE");
                 orientation = Surface.ROTATION_270;
-                if(sensorState == running && isLandscapeEnabled) {
-                    setSensorListeners(mSensorManager);
-                }
-                if(!isLandscapeEnabled) {
-                    unregisterSensor();
-                    TiltNotification.update(this, "Pause", -2);
-                }
                 break;
         }
 
     }
+
 
 
     private BroadcastReceiver screenReceiver = new BroadcastReceiver() {
