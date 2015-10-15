@@ -17,6 +17,7 @@ import android.widget.TextView;
 public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener{
     private static final String TAG = "tilt.android.heetae.yu";
 
+    //Shared Preference Variable Keys for Settings
     public static final String PREF_TILT_ANGLE = "tilt_angle";
     public static final String PREF_HEADSUP_NOTIFICATION = "headsup_notification";
     public static final String PREF_VIBRATE = "notification_vibrate";
@@ -34,17 +35,21 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         setContentView(R.layout.activity_tilt);
 
-
+        //Initialize tilt angle seekbar
         mSeekBar = (SeekBar)findViewById(R.id.seekbar);
         mSeekBar.setMax(45);
         mSeekBar.setOnSeekBarChangeListener(this);
 
+        //Initialize textview for tilt angle
         angle = (TextView)findViewById(R.id.tilt_angle);
+
+        //Initiate Switch Buttons
         Switch headsup = (Switch) findViewById(R.id.headsup_switch);
         Switch vibrate = (Switch) findViewById(R.id.vibrate_switch);
         Switch portrait = (Switch) findViewById(R.id.portrait_orientation_switch);
         Switch landscape = (Switch) findViewById(R.id.landscape_orientation_switch);
 
+        //
         int preferredAngle = PreferenceManager.getDefaultSharedPreferences(this).getInt(TiltActivity.PREF_TILT_ANGLE, -1);
         boolean isHeadsUpOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
         boolean isVibrateOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_VIBRATE, true);
@@ -66,17 +71,19 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             vibrate.setChecked(isVibrateOn);
         }
 
-
-
+        //Headsup Switch Listener
         headsup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //If user wants headsup notification set preference variable true
                 if (isChecked) {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_HEADSUP_NOTIFICATION, true)
                             .commit();
-                } else {
+                }
+                //If user does not want headsup notification set preference variable false
+                else {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_HEADSUP_NOTIFICATION, false)
@@ -85,16 +92,18 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
-
+        //Vibrate Switch Listener
         vibrate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //If user wants vibration with notification set preference variable true
                 if(isChecked) {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_VIBRATE, true)
                             .commit();
                 }
+                //If user does not want vibration with notification set preference variable false
                 else {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
@@ -104,15 +113,19 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
+        //Portrait Switch Listener
         portrait.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //If user wants the app enabled when phone is in portrait mode
                 if (isChecked) {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_PORTRAIT_ORIENTATION, true)
                             .commit();
-                } else {
+                }
+                //If user does not want the app enabled when phone is in portrait mode
+                else {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_PORTRAIT_ORIENTATION, false)
@@ -121,15 +134,19 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
+        //Landscape Switch Listener
         landscape.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //If user wants the app enabled when phone is in landscape mode
                 if (isChecked) {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_PORTRAIT_ORIENTATION, true)
                             .commit();
-                } else {
+                }
+                //If user does not want the app enabled when phone is in landscape mode
+                else {
                     PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
                             .edit()
                             .putBoolean(PREF_PORTRAIT_ORIENTATION, false)
@@ -138,16 +155,19 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
-            Intent i = new Intent(getApplicationContext(), SensorService.class);
-            startService(i);
-            Log.i(TAG, "Service Started From TiltActivity");
 
+        //Start SensorService to detect phone tilt
+        Intent i = new Intent(getApplicationContext(), SensorService.class);
+        startService(i);
+        Log.i(TAG, "Service Started From TiltActivity");
 
+        //SharedPreferenceChange Listener
         SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 Log.i(TAG, key + "Preference Changed");
                 switch(key) {
+                    //If tilt angle is changed
                     case(PREF_TILT_ANGLE):
                         SensorService.preferredTiltAngle = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getInt(PREF_TILT_ANGLE, 0);
                         int orientation = getWindowManager().getDefaultDisplay().getRotation();
@@ -168,29 +188,20 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                         SensorService.isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getBoolean(PREF_LANDSCAPE_ORIENTATION, true);
                         break;
                 }
-
-
             }
         };
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
-
-
-
     }
 
-
+    //Change text displaying tilt angle when seekbar progress is changed
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         angle.setText("Tilt Angle " + progress + "\u00B0");
     }
 
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
+    //When user releases seekbar set preference variable
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -199,5 +210,9 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 .commit();
     }
 
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
 
 }

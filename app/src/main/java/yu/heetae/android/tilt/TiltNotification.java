@@ -12,8 +12,9 @@ import android.support.v4.app.NotificationCompat;
 /**
  * Created by yu on 7/11/15.
  */
-public class TiltNotification {//
+public class TiltNotification {
 
+    //PendingIntent Keys
     private static final String SETTINGS = "yu.heetae.android.tilt.SETTINGS";
     private static final String FIFTEEN = "yu.heetae.android.tilt.FIFTEEN";
     private static final String THIRTY = "yu.heetae.android.tilt.THIRTY";
@@ -31,7 +32,7 @@ public class TiltNotification {//
     private static PendingIntent timeInterval;
     private static PendingIntent settings;
 
-
+    //R.drawable ids for notification actions
     private static int playButton = R.drawable.ic_play_arrow_black_36dp;
     private static int pauseButton = R.drawable.ic_pause_black_36dp;
     private static int settingsButton = R.drawable.ic_settings_black_36dp;
@@ -40,8 +41,7 @@ public class TiltNotification {//
     private static int onehourButton = R.drawable.ic_onehour_white;
     private static int timerOffButton = R.drawable.ic_timer_off_black_36dp;
 
-
-
+    //Create default notification
     public static Notification createNotification(Context appContext) {
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -54,23 +54,28 @@ public class TiltNotification {//
             timerOffButton = R.drawable.ic_timer_off_white_36dp;
         }
 
+        //PendingIntent for when notification pause button is pressed
         Intent pauseIntent = new Intent(appContext, SensorService.class);
         pauseIntent.setAction("Pause");
         pause = PendingIntent.getService(appContext, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        //PendingIntent for when notification play button is pressed
         Intent playIntent = new Intent(appContext, SensorService.class);
         playIntent.setAction("Play");
         play = PendingIntent.getService(appContext, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
+        //PendingIntent for when notification setting button is pressed
         Intent settingsIntent = new Intent(SETTINGS);
         settings = PendingIntent.getBroadcast(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        //PendingIntent for when notification timer button is pressed
         Intent timeIntervalIntent = new Intent(FIFTEEN);
         timeInterval = PendingIntent.getBroadcast(appContext, 0, timeIntervalIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        //Initialize NotificationManager
         sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        //Build Default Ongoing Notification
         sNotification = new NotificationCompat.Builder(appContext)
                 .setSmallIcon(R.drawable.ic_launcher_notification)
                 .setContentTitle("Tilt")
@@ -89,40 +94,59 @@ public class TiltNotification {//
         return sNotification;
     }
 
+    //Remove a notification
     public static void close(int id) {
         sManager.cancel(id);
     }
 
+    //Update Ongoing Notification
     public static void update(Context appContext, String option, int interval) {
 
         sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        String TIME_INTERVAL = FIFTEEN;
-        int intervalDrawable = fifteenButton;
+        String TIME_INTERVAL;
 
+        //will hold R.drawable for notification's timer action
+        int intervalDrawable;
+
+        //if interval = 30, user pressed timer for fifteen minutes
         if(interval == 30) {
             TIME_INTERVAL = THIRTY;
             intervalDrawable = thirtyButton;
         }
+        //if interval = 60, user pressed timer for thirty minutes
         else if(interval == 60) {
             TIME_INTERVAL = ONEHOUR;
             intervalDrawable = onehourButton;
         }
+        //if interval = 0, user pressed timer for one hour
         else if(interval == 0){
             TIME_INTERVAL = CANCEL_TIMER;
             intervalDrawable = timerOffButton;
         }
+        //else user pressed cancel timer button or this button is in default state
+        else {
+            TIME_INTERVAL = FIFTEEN;
+            intervalDrawable= fifteenButton;
+        }
 
+        //PendingIntent for Notification Timer Action
         Intent timeIntervalIntent = new Intent(TIME_INTERVAL);
         timeInterval = PendingIntent.getBroadcast(appContext, 0, timeIntervalIntent, 0);
 
-
+        //PendingIntent for Notification Settings Action
         Intent settingsIntent = new Intent(SETTINGS);
         settings = PendingIntent.getBroadcast(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        //will hold R.drawable for play/pause action
         int playPauseId;
+
+        //notification ContextText String
         String contextText = "Expand for More Options";
 
+        //Pending intent for play/pause action
         PendingIntent playPauseIntent;
+
+        //if option = pause, user pressed pause button so change to play button
         if(option == "Pause") {
             playPauseId = playButton;
             Intent playIntent = new Intent(appContext, SensorService.class);
@@ -139,6 +163,7 @@ public class TiltNotification {//
                 contextText = "Tilt disabled in current orientation";
             }
         }
+        //else user pressed play button so change to pause button
         else {
             playPauseId = pauseButton;
             Intent pauseIntent = new Intent(appContext, SensorService.class);
