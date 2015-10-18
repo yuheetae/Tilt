@@ -41,8 +41,8 @@ public class SensorService extends Service implements SensorEventListener{
     public static final String PREF_PORTRAIT_ORIENTATION = "portrait_orientation";
     public static final String PREF_LANDSCAPE_ORIENTATION = "landscape_orientation";
 
-    //boolean determining if Service is running
-    public static boolean isServiceRunning;
+    //gloabl boolean determining if Service is running
+    public static boolean isServiceRunning = false;
 
     //Sensor & SensorManger
     private Sensor mSensor;
@@ -212,6 +212,7 @@ public class SensorService extends Service implements SensorEventListener{
         unregisterSensor();
         Log.i(TAG, "Service Destroyed");
         stopForeground(true);
+        isServiceRunning = false;
         super.onDestroy();
     }
 
@@ -260,7 +261,7 @@ public class SensorService extends Service implements SensorEventListener{
         double tiltAngleLandscape = Math.toDegrees(mOrientation[2]);
 
         //if device orientation is in normal portrait
-        if(orientation == Surface.ROTATION_0) {
+        if(orientation == Surface.ROTATION_0 && isPortraitEnabled) {
             if (tiltAnglePortrait == 0) {
                 if (1 / tiltAnglePortrait > 0 && tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
                     Log.i(TAG, "TILT ALERT");
@@ -277,7 +278,7 @@ public class SensorService extends Service implements SensorEventListener{
         }
 
         //if device orientation is in either normal or reverse landscape
-        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270) {
+        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270 && isLandscapeEnabled) {
             if (tiltAnglePortrait == 0) {
                 if (1 / tiltAngleLandscape > 0 && tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
                     Log.i(TAG, "TILT ALERT");
@@ -292,15 +293,10 @@ public class SensorService extends Service implements SensorEventListener{
                 }
             }
         }
-
-
     }
 
     //Alert user with a notification that device is tilted beyond threshold
     public void tiltAlert() {
-
-        //boolean isHeadsUpOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
-        //boolean isVibrateOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_VIBRATE, true);
 
         //Create notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)

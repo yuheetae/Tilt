@@ -64,9 +64,9 @@ public class TiltNotification {
         playIntent.setAction("Play");
         play = PendingIntent.getService(appContext, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        //PendingIntent for when notification setting button is pressed
-        Intent settingsIntent = new Intent(SETTINGS);
-        settings = PendingIntent.getBroadcast(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //PendingIntent for Notification Settings Action
+        Intent settingsIntent = new Intent(appContext, TiltActivity.class);
+        settings = PendingIntent.getActivity(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //PendingIntent for when notification timer button is pressed
         Intent timeIntervalIntent = new Intent(FIFTEEN);
@@ -132,10 +132,6 @@ public class TiltNotification {
         //PendingIntent for Notification Timer Action
         Intent timeIntervalIntent = new Intent(TIME_INTERVAL);
         timeInterval = PendingIntent.getBroadcast(appContext, 0, timeIntervalIntent, 0);
-
-        //PendingIntent for Notification Settings Action
-        Intent settingsIntent = new Intent(SETTINGS);
-        settings = PendingIntent.getBroadcast(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //will hold R.drawable for play/pause action
         int playPauseId;

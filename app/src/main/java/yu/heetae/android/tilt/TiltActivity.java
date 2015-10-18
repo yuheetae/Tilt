@@ -49,13 +49,14 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Switch portrait = (Switch) findViewById(R.id.portrait_orientation_switch);
         Switch landscape = (Switch) findViewById(R.id.landscape_orientation_switch);
 
-        //
+        //Get SharedPreference Variables
         int preferredAngle = PreferenceManager.getDefaultSharedPreferences(this).getInt(TiltActivity.PREF_TILT_ANGLE, -1);
         boolean isHeadsUpOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
         boolean isVibrateOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_VIBRATE, true);
         boolean isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_PORTRAIT_ORIENTATION, true);
         boolean isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_LANDSCAPE_ORIENTATION, true);
 
+        //First time setting up preference variables
         if(preferredAngle == -1) {
             PreferenceManager.getDefaultSharedPreferences(this)
                     .edit()
@@ -64,6 +65,7 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     .putBoolean(PREF_VIBRATE, true)
                     .commit();
         }
+        //Setup seekbar and switches based on preferences
         else {
             angle.setText("Tilt Angle " + preferredAngle + "\u00B0");
             mSeekBar.setProgress(preferredAngle);
@@ -157,9 +159,11 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
         //Start SensorService to detect phone tilt
-        Intent i = new Intent(getApplicationContext(), SensorService.class);
-        startService(i);
-        Log.i(TAG, "Service Started From TiltActivity");
+        if(!SensorService.isServiceRunning) {
+            Intent i = new Intent(getApplicationContext(), SensorService.class);
+            startService(i);
+            Log.i(TAG, "Service Started From TiltActivity");
+        }
 
         //SharedPreferenceChange Listener
         SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
