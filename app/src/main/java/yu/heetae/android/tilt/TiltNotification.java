@@ -15,7 +15,6 @@ import android.support.v4.app.NotificationCompat;
 public class TiltNotification {
 
     //PendingIntent Keys
-    private static final String SETTINGS = "yu.heetae.android.tilt.SETTINGS";
     private static final String FIFTEEN = "yu.heetae.android.tilt.FIFTEEN";
     private static final String THIRTY = "yu.heetae.android.tilt.THIRTY";
     private static final String ONEHOUR = "yu.heetae.android.tilt.ONEHOUR";

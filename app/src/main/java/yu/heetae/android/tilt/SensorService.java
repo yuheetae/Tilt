@@ -261,7 +261,7 @@ public class SensorService extends Service implements SensorEventListener{
         double tiltAngleLandscape = Math.toDegrees(mOrientation[2]);
 
         //if device orientation is in normal portrait
-        if(orientation == Surface.ROTATION_0 && isPortraitEnabled) {
+        if(orientation == Surface.ROTATION_0 && !isPortraitEnabled) {
             if (tiltAnglePortrait == 0) {
                 if (1 / tiltAnglePortrait > 0 && tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
                     Log.i(TAG, "TILT ALERT");
@@ -278,7 +278,7 @@ public class SensorService extends Service implements SensorEventListener{
         }
 
         //if device orientation is in either normal or reverse landscape
-        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270 && isLandscapeEnabled) {
+        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270 && !isLandscapeEnabled) {
             if (tiltAnglePortrait == 0) {
                 if (1 / tiltAngleLandscape > 0 && tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
                     Log.i(TAG, "TILT ALERT");
@@ -342,7 +342,6 @@ public class SensorService extends Service implements SensorEventListener{
                 orientation = Surface.ROTATION_270;
                 break;
         }
-
     }
 
     //SensorService Broadcast Receiver

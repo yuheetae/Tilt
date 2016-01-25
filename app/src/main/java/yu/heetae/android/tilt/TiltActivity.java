@@ -47,14 +47,14 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         Switch headsup = (Switch) findViewById(R.id.headsup_switch);
         Switch vibrate = (Switch) findViewById(R.id.vibrate_switch);
         Switch portrait = (Switch) findViewById(R.id.portrait_orientation_switch);
-        Switch landscape = (Switch) findViewById(R.id.landscape_orientation_switch);
+        //Switch landscape = (Switch) findViewById(R.id.landscape_orientation_switch);
 
         //Get SharedPreference Variables
         int preferredAngle = PreferenceManager.getDefaultSharedPreferences(this).getInt(TiltActivity.PREF_TILT_ANGLE, -1);
         boolean isHeadsUpOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
         boolean isVibrateOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_VIBRATE, true);
-        boolean isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_PORTRAIT_ORIENTATION, true);
-        boolean isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_LANDSCAPE_ORIENTATION, true);
+        boolean isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_PORTRAIT_ORIENTATION, false);
+        boolean isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_LANDSCAPE_ORIENTATION, false);
 
         //First time setting up preference variables
         if(preferredAngle == -1) {
@@ -63,6 +63,8 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     .putInt(PREF_TILT_ANGLE, 0)
                     .putBoolean(PREF_HEADSUP_NOTIFICATION, true)
                     .putBoolean(PREF_VIBRATE, true)
+                    .putBoolean(PREF_PORTRAIT_ORIENTATION, false)   //app is on for portrait
+                    //.putBoolean(PREF_LANDSCAPE_ORIENTATION, true)
                     .commit();
         }
         //Setup seekbar and switches based on preferences
@@ -71,6 +73,8 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             mSeekBar.setProgress(preferredAngle);
             headsup.setChecked(isHeadsUpOn);
             vibrate.setChecked(isVibrateOn);
+            portrait.setChecked(isPortraitEnabled);
+            //landscape.setChecked(isLandscapeEnabled);
         }
 
         //Headsup Switch Listener
@@ -137,6 +141,7 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         });
 
         //Landscape Switch Listener
+        /*
         landscape.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -156,7 +161,7 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 }
             }
         });
-
+        */
 
         //Start SensorService to detect phone tilt
         if(!SensorService.isServiceRunning) {
