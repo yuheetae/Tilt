@@ -83,17 +83,11 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 //If user wants headsup notification set preference variable true
                 if (isChecked) {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_HEADSUP_NOTIFICATION, true)
-                            .commit();
+                    SettingsPreferences.setPrefHeadsupNotification(TiltActivity.this, true);
                 }
                 //If user does not want headsup notification set preference variable false
                 else {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_HEADSUP_NOTIFICATION, false)
-                            .commit();
+                    SettingsPreferences.setPrefHeadsupNotification(TiltActivity.this, false);
                 }
             }
         });
@@ -104,17 +98,11 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 //If user wants vibration with notification set preference variable true
                 if(isChecked) {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_VIBRATE, true)
-                            .commit();
+                    SettingsPreferences.setPrefVibrate(TiltActivity.this, true);
                 }
                 //If user does not want vibration with notification set preference variable false
                 else {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_VIBRATE, false)
-                            .commit();
+                    SettingsPreferences.setPrefVibrate(TiltActivity.this, false);
                 }
             }
         });
@@ -125,17 +113,11 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 //If user wants the app enabled when phone is in portrait mode
                 if (isChecked) {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_PORTRAIT_ORIENTATION, true)
-                            .commit();
+                    SettingsPreferences.setPrefPortrait(TiltActivity.this, true);
                 }
                 //If user does not want the app enabled when phone is in portrait mode
                 else {
-                    PreferenceManager.getDefaultSharedPreferences(TiltActivity.this)
-                            .edit()
-                            .putBoolean(PREF_PORTRAIT_ORIENTATION, false)
-                            .commit();
+                    SettingsPreferences.setPrefPortrait(TiltActivity.this, false);
                 }
             }
         });

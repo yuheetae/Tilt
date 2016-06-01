@@ -41,7 +41,7 @@ public class SensorService extends Service implements SensorEventListener{
     public static final String PREF_PORTRAIT_ORIENTATION = "portrait_orientation";
     public static final String PREF_LANDSCAPE_ORIENTATION = "landscape_orientation";
 
-    //gloabl boolean determining if Service is running
+    //global boolean determining if Service is running
     public static boolean isServiceRunning = false;
 
     //Sensor & SensorManger
