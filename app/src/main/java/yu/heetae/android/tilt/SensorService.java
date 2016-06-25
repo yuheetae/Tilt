@@ -219,9 +219,9 @@ public class SensorService extends Service implements SensorEventListener{
     //Register multiple listeners to a SensorManager
     public void setSensorListeners(SensorManager manager) {
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                1000000);
+                1000000, 1000000);
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                1000000);
+                1000000, 1000000);
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_NORMAL);
     }
 
