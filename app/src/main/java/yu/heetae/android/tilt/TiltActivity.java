@@ -156,24 +156,26 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 switch(key) {
                     //If tilt mAngleTextView is changed
                     case(PREF_TILT_ANGLE):
-                        SensorService.preferredTiltAngle = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getInt(PREF_TILT_ANGLE, 0);
+                        SensorService.preferredTiltAngle = SettingsPreferences.getTiltAngle(TiltActivity.this);
                         int orientation = getWindowManager().getDefaultDisplay().getRotation();
                         if(orientation == Surface.ROTATION_0 || orientation == Surface.ROTATION_90) {
                             SensorService.preferredTiltAngle = -SensorService.preferredTiltAngle;
                         }
                         break;
                     case(PREF_HEADSUP_NOTIFICATION):
-                        SensorService.isHeadsUpEnabled = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
+                        SensorService.isHeadsUpEnabled = SettingsPreferences.getHeadsupSwitch(TiltActivity.this);
                         break;
                     case(PREF_VIBRATE):
-                        SensorService.isVibrateEnabled = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getBoolean(PREF_VIBRATE, true);
+                        SensorService.isVibrateEnabled = SettingsPreferences.getVibrateSwitch(TiltActivity.this);
                         break;
                     case(PREF_PORTRAIT_ORIENTATION):
-                        SensorService.isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getBoolean(PREF_PORTRAIT_ORIENTATION, true);
+                        SensorService.isPortraitEnabled = SettingsPreferences.getPortraitSwitch(TiltActivity.this);
                         break;
+                    /*
                     case(PREF_LANDSCAPE_ORIENTATION):
                         SensorService.isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(TiltActivity.this).getBoolean(PREF_LANDSCAPE_ORIENTATION, true);
                         break;
+                        */
                 }
             }
         };
@@ -191,10 +193,7 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     //When user releases seekbar set preference variable
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .edit()
-                .putInt(PREF_TILT_ANGLE, mSeekBar.getProgress())
-                .commit();
+        SettingsPreferences.setTiltAngle(this, mSeekBar.getProgress());
     }
 
     @Override

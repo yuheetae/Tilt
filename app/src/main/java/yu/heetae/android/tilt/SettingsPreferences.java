@@ -3,6 +3,8 @@ package yu.heetae.android.tilt;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Surface;
 
 /**
  * Created by yu on 5/31/16.
@@ -84,6 +86,4 @@ public class SettingsPreferences {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(PREF_PORTRAIT_ORIENTATION, false);
     }
-
-
 }
