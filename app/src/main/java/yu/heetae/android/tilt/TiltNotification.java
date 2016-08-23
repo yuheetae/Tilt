@@ -7,7 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.NotificationCompat;
+import java.util.HashMap;
 
 /**
  * Created by yu on 7/11/15.
@@ -26,50 +27,40 @@ public class TiltNotification {
     public static NotificationManager sManager;
     public static Notification sNotification;
 
-    private static PendingIntent pause;
-    private static PendingIntent play;
-    private static PendingIntent timeInterval;
-    private static PendingIntent settings;
+    private static NotificationCompat.Action pauseAction;
+    private static NotificationCompat.Action resumeAction;
+    private static NotificationCompat.Action cancelTimerAction;
+    private static NotificationCompat.Action disabledTimer;
+    private static NotificationCompat.Action fifteenMinAction;
+    private static NotificationCompat.Action thirtyMinAction;
+    private static NotificationCompat.Action oneHourAction;
+    private static NotificationCompat.Action settingsAction;
+
+    private static HashMap<String, NotificationCompat.Action> hm = new HashMap<>();
 
     //R.drawable ids for notification actions
-    private static int playButton = R.drawable.ic_play_arrow_black_36dp;
-    private static int pauseButton = R.drawable.ic_pause_black_36dp;
-    private static int settingsButton = R.drawable.ic_settings_black_36dp;
-    private static int fifteenButton = R.drawable.ic_fifteenmin;
-    private static int thirtyButton = R.drawable.ic_thirtymin;
-    private static int onehourButton = R.drawable.ic_onehour_white;
-    private static int timerOffButton = R.drawable.ic_timer_off_black_36dp;
+    private static int resumeDrawable = R.drawable.ic_play_arrow_black_36dp;
+    private static int pauseDrawable = R.drawable.ic_pause_black_36dp;
+    private static int settingsDrawable = R.drawable.ic_settings_black_36dp;
+    private static int fifteenDrawable = R.drawable.ic_fifteenmin;
+    private static int thirtyDrawable = R.drawable.ic_thirtymin;
+    private static int oneHourDrawable = R.drawable.ic_onehour_white;
+    private static int timerOffDrawable = R.drawable.ic_timer_off_black_36dp;
 
     //Create default notification
     public static Notification createNotification(Context appContext) {
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            playButton = R.drawable.ic_play_arrow_white_36dp;
-            pauseButton = R.drawable.ic_pause_white_36dp;
-            settingsButton = R.drawable.ic_settings_black_36dp;
-            fifteenButton = R.drawable.ic_fifteenmin_white;
-            thirtyButton = R.drawable.ic_thirtymin_white;
-            onehourButton = R.drawable.ic_onehour_white;
-            timerOffButton = R.drawable.ic_timer_off_white_36dp;
+            resumeDrawable = R.drawable.ic_play_arrow_white_36dp;
+            pauseDrawable = R.drawable.ic_pause_white_36dp;
+            settingsDrawable = R.drawable.ic_settings_black_36dp;
+            fifteenDrawable = R.drawable.ic_fifteenmin_white;
+            thirtyDrawable = R.drawable.ic_thirtymin_white;
+            oneHourDrawable = R.drawable.ic_onehour_white;
+            timerOffDrawable = R.drawable.ic_timer_off_white_36dp;
         }
 
-        //PendingIntent for when notification pause button is pressed
-        Intent pauseIntent = new Intent(appContext, SensorService.class);
-        pauseIntent.setAction("Pause");
-        pause = PendingIntent.getService(appContext, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //PendingIntent for when notification play button is pressed
-        Intent playIntent = new Intent(appContext, SensorService.class);
-        playIntent.setAction("Play");
-        play = PendingIntent.getService(appContext, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //PendingIntent for Notification Settings Action
-        Intent settingsIntent = new Intent(appContext, TiltActivity.class);
-        settings = PendingIntent.getActivity(appContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //PendingIntent for when notification timer button is pressed
-        Intent timeIntervalIntent = new Intent(FIFTEEN);
-        timeInterval = PendingIntent.getBroadcast(appContext, 0, timeIntervalIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        initializeActions(appContext);
 
         //Initialize NotificationManager
         sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -82,10 +73,11 @@ public class TiltNotification {
                 .setPriority(android.support.v4.app.NotificationCompat.PRIORITY_MIN)
                 .setDefaults(Notification.FLAG_SHOW_LIGHTS)
                 //.setOngoing(true)
-                .addAction(pauseButton, null, pause)
-                .addAction(fifteenButton, null, timeInterval)
-                .addAction(R.drawable.ic_settings_black_24dp, null, settings)
-                .setColor(Color.parseColor("#303030"))
+                .addAction(pauseAction)
+                .addAction(fifteenMinAction)
+                //.addAction(R.drawable.ic_settings_black_24dp, null, settingsAction)
+                .addAction(settingsAction)
+                .setColor(Color.parseColor("#6441A4"))
                 .build();
 
         sNotification.ledARGB = 0xff0000ff;
@@ -101,70 +93,37 @@ public class TiltNotification {
     //Update Ongoing Notification
     public static void update(Context appContext, String option, int interval) {
 
-        sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        String TIME_INTERVAL;
+        //sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        String TIMER_INTERVAL;
 
-        //will hold R.drawable for notification's timer action
-        int intervalDrawable;
+        NotificationCompat.Action timerAction = setTimerAction(appContext, interval);
+        NotificationCompat.Action playPauseAction;
 
-        //if interval = 30, user pressed timer for fifteen minutes
-        if(interval == 30) {
-            TIME_INTERVAL = THIRTY;
-            intervalDrawable = thirtyButton;
-        }
-        //if interval = 60, user pressed timer for thirty minutes
-        else if(interval == 60) {
-            TIME_INTERVAL = ONEHOUR;
-            intervalDrawable = onehourButton;
-        }
-        //if interval = 0, user pressed timer for one hour
-        else if(interval == 0){
-            TIME_INTERVAL = CANCEL_TIMER;
-            intervalDrawable = timerOffButton;
-        }
-        //else user pressed cancel timer button or this button is in default state
-        else {
-            TIME_INTERVAL = FIFTEEN;
-            intervalDrawable= fifteenButton;
-        }
-
-        //PendingIntent for Notification Timer Action
-        Intent timeIntervalIntent = new Intent(TIME_INTERVAL);
-        timeInterval = PendingIntent.getBroadcast(appContext, 0, timeIntervalIntent, 0);
-
-        //will hold R.drawable for play/pause action
-        int playPauseId;
 
         //notification ContextText String
         String contextText = "Expand for More Options";
 
-        //Pending intent for play/pause action
-        PendingIntent playPauseIntent;
-
-        //if option = pause, user pressed pause button so change to play button
+        //if option = pauseAction, user pressed pauseAction button so change to resumeAction button
         if(option == "Pause") {
-            playPauseId = playButton;
-            Intent playIntent = new Intent(appContext, SensorService.class);
-            playIntent.setAction("Play");
-            play = PendingIntent.getService(appContext, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            playPauseIntent = play;
-            contextText = "Paused, press play to resume";
-            if(interval == -1) {
-                timeInterval = null;
-            }
-            else if(interval == -2) {
-                timeInterval = null;
-                playPauseIntent = null;
-                contextText = "Tilt disabled in current orientation";
+            playPauseAction = resumeAction;
+
+            switch(interval) {
+                case 30:
+                    contextText = "Paused for 15 minutes, press resume to resume";
+                    break;
+                case 60:
+                    contextText = "Paused for 30 minutes, press resume to resume";
+                    break;
+                case 0:
+                    contextText = "Paused for 1 hour, press resume to resume";
+                    break;
+                default:
+                    contextText = "Paused, press resume to resume";
             }
         }
-        //else user pressed play button so change to pause button
+        //else user pressed resumeAction button so change to pauseAction button
         else {
-            playPauseId = pauseButton;
-            Intent pauseIntent = new Intent(appContext, SensorService.class);
-            pauseIntent.setAction("Pause");
-            pause = PendingIntent.getService(appContext, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            playPauseIntent = pause;
+            playPauseAction = pauseAction;
             contextText = "Running, press pause to pause";
         }
 
@@ -175,13 +134,121 @@ public class TiltNotification {
                 .setPriority(Notification.PRIORITY_MIN)
                 //.setDefaults(Notification.FLAG_SHOW_LIGHTS)
                 //.setOngoing(true)
-                .addAction(playPauseId, null, playPauseIntent)
-                .addAction(intervalDrawable, null, timeInterval)
-                .addAction(R.drawable.ic_settings_black_24dp, null, settings)
-                .setColor(Color.parseColor("#303030"))
+                .addAction(playPauseAction)
+                .addAction(timerAction)
+                .addAction(settingsAction)
+                .setColor(Color.parseColor("#6441A4"))
                 .build();
 
 
         sManager.notify(NOTIFICATION_ID, notification);
+    }
+
+
+    private static void initializeActions(Context context) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            pauseAction = createAction("Pause", context, SensorService.class, pauseDrawable,
+                    context.getString(R.string.pause_action_label), ActionType.SERVICE);
+
+            resumeAction = createAction("Play", context, SensorService.class, resumeDrawable,
+                    context.getString(R.string.resume_action_label), ActionType.SERVICE);
+
+            settingsAction = createAction(null, context, TiltActivity.class, settingsDrawable,
+                    context.getString(R.string.settings_action_label), ActionType.ACTIVITY);
+
+            fifteenMinAction = createAction(FIFTEEN, context, null, fifteenDrawable,
+                    context.getString(R.string.snooze1_action_label), ActionType.BROADCAST);
+
+            thirtyMinAction = createAction(THIRTY, context, null, thirtyDrawable,
+                    context.getString(R.string.snooze2_action_label), ActionType.BROADCAST);
+
+            oneHourAction = createAction(ONEHOUR, context, null, oneHourDrawable,
+                    context.getString(R.string.snooze3_action_label), ActionType.BROADCAST);
+
+            cancelTimerAction = createAction(CANCEL_TIMER, context, null, timerOffDrawable,
+                    context.getString(R.string.snooze4_action_label), ActionType.BROADCAST);
+
+            disabledTimer = createAction(null, null, null, fifteenDrawable,
+                    context.getString(R.string.snooze0_action_label), ActionType.DEFAULT);
+        } else {
+            pauseAction = createAction("Pause", context, SensorService.class, pauseDrawable,
+                    null, ActionType.SERVICE);
+
+            resumeAction = createAction("Play", context, SensorService.class, resumeDrawable,
+                    null, ActionType.SERVICE);
+
+            settingsAction = createAction(null, context, TiltActivity.class, settingsDrawable,
+                    null, ActionType.ACTIVITY);
+
+            fifteenMinAction = createAction(FIFTEEN, context, null, fifteenDrawable,
+                    null, ActionType.BROADCAST);
+
+            thirtyMinAction = createAction(THIRTY, context, null, thirtyDrawable,
+                    null, ActionType.BROADCAST);
+
+            oneHourAction = createAction(ONEHOUR, context, null, oneHourDrawable,
+                    null, ActionType.BROADCAST);
+
+            cancelTimerAction = createAction(CANCEL_TIMER, context, null, timerOffDrawable,
+                    null, ActionType.BROADCAST);
+
+            disabledTimer = createAction(null, null, null, fifteenDrawable,
+                    null, ActionType.DEFAULT);
+        }
+    }
+
+
+    private static NotificationCompat.Action createAction(String action, Context context, Class c, int icon, String title, ActionType type) {
+        Intent i;
+        PendingIntent pi;
+
+        switch(type) {
+            case SERVICE:
+                i = new Intent(context, c);
+                i.setAction(action);
+                pi = PendingIntent.getService(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+                break;
+            case ACTIVITY:
+                i = new Intent(context, c);
+                pi = PendingIntent.getActivity(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+                break;
+            case BROADCAST:
+                i = new Intent(action);
+                pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+                break;
+            default:
+                pi = null;
+        }
+
+        return new NotificationCompat.Action.Builder(icon,
+                title,
+                pi)
+                .build();
+    }
+
+    public enum ActionType {
+        ACTIVITY,
+        SERVICE,
+        BROADCAST,
+        DEFAULT
+    }
+
+
+
+    private static NotificationCompat.Action setTimerAction(Context context, int interval) {
+
+        switch(interval) {
+            case 30:
+                return thirtyMinAction;
+            case 60:
+                return oneHourAction;
+            case 0:
+                return cancelTimerAction;
+            case -1:
+                return disabledTimer;
+            default:
+                return fifteenMinAction;
+        }
+
     }
 }

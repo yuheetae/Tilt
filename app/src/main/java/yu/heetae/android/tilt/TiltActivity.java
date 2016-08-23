@@ -31,7 +31,6 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private Switch mVibrateSwitch;
     private Switch mPortraitSwitch;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

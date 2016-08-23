@@ -4,4 +4,12 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="tilt_angle">Tilt Angle 0\u00B0</string>
+    <string name="pause_action_label">Pause</string>
+    <string name="resume_action_label">Resume</string>
+    <string name="settings_action_label">Settings</string>
+    <string name="snooze0_action_label">Snooze 15m</string>
+    <string name="snooze1_action_label">Snooze 15m</string>
+    <string name="snooze2_action_label">Snooze 30m</string>
+    <string name="snooze3_action_label">Snooze 1hr</string>
+    <string name="snooze4_action_label">Cancel Snooze</string>
 </resources>
