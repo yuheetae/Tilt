@@ -14,7 +14,6 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-
 public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener{
     private static final String TAG = "tilt.android.heetae.yu";
 
