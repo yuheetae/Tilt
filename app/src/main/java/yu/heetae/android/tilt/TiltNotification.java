@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.NotificationCompat;
 import java.util.HashMap;
+import static yu.heetae.android.tilt.NotificationStatus.*;
 
 /**
  * Created by yu on 7/11/15.
@@ -39,24 +40,24 @@ public class TiltNotification {
     private static HashMap<String, NotificationCompat.Action> hm = new HashMap<>();
 
     //R.drawable ids for notification actions
-    private static int resumeDrawable = R.drawable.ic_play_arrow_black_36dp;
-    private static int pauseDrawable = R.drawable.ic_pause_black_36dp;
-    private static int settingsDrawable = R.drawable.ic_settings_black_36dp;
-    private static int fifteenDrawable = R.drawable.ic_fifteenmin;
-    private static int thirtyDrawable = R.drawable.ic_thirtymin;
-    private static int oneHourDrawable = R.drawable.ic_onehour_white;
+    private static int resumeDrawable = R.drawable.ic_play_arrow_black_24dp;
+    private static int pauseDrawable = R.drawable.ic_pause_black_24dp;
+    private static int settingsDrawable = R.drawable.ic_settings_black_24dp;
+    private static int fifteenDrawable = R.drawable.ic_fifteenmin_black;
+    private static int thirtyDrawable = R.drawable.ic_thirtymin_black;
+    private static int oneHourDrawable = R.drawable.ic_onehr_black;
     private static int timerOffDrawable = R.drawable.ic_timer_off_black_36dp;
 
     //Create default notification
     public static Notification createNotification(Context appContext) {
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            resumeDrawable = R.drawable.ic_play_arrow_white_36dp;
-            pauseDrawable = R.drawable.ic_pause_white_36dp;
-            settingsDrawable = R.drawable.ic_settings_black_36dp;
+            resumeDrawable = R.drawable.ic_play_arrow_white_24dp;
+            pauseDrawable = R.drawable.ic_pause_white_24dp;
+            settingsDrawable = R.drawable.ic_settings_white_24dp;
             fifteenDrawable = R.drawable.ic_fifteenmin_white;
             thirtyDrawable = R.drawable.ic_thirtymin_white;
-            oneHourDrawable = R.drawable.ic_onehour_white;
+            oneHourDrawable = R.drawable.ic_onehr_white;
             timerOffDrawable = R.drawable.ic_timer_off_white_36dp;
         }
 
@@ -67,7 +68,7 @@ public class TiltNotification {
 
         //Build Default Ongoing Notification
         sNotification = new NotificationCompat.Builder(appContext)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setSmallIcon(R.drawable.ic_play_arrow_black_24dp)
                 .setContentTitle("Tilt")
                 .setContentText("Expand for options")
                 .setPriority(android.support.v4.app.NotificationCompat.PRIORITY_MIN)
@@ -91,12 +92,12 @@ public class TiltNotification {
     }
 
     //Update Ongoing Notification
-    public static void update(Context appContext, String option, int interval) {
+    public static void update(Context appContext, Status status, Timer interval) {
 
         //sManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
         String TIMER_INTERVAL;
 
-        NotificationCompat.Action timerAction = setTimerAction(appContext, interval);
+        NotificationCompat.Action timerAction;
         NotificationCompat.Action playPauseAction;
 
 
@@ -104,31 +105,38 @@ public class TiltNotification {
         String contextText = "Expand for More Options";
 
         //if option = pauseAction, user pressed pauseAction button so change to resumeAction button
-        if(option == "Pause") {
-            playPauseAction = resumeAction;
 
-            switch(interval) {
-                case 30:
-                    contextText = "Paused for 15 minutes, press resume to resume";
-                    break;
-                case 60:
-                    contextText = "Paused for 30 minutes, press resume to resume";
-                    break;
-                case 0:
-                    contextText = "Paused for 1 hour, press resume to resume";
-                    break;
-                default:
-                    contextText = "Paused, press resume to resume";
-            }
-        }
-        //else user pressed resumeAction button so change to pauseAction button
-        else {
+        if(status == Status.PAUSE) {
+            playPauseAction = resumeAction;
+            contextText = "Paused, press resume to resume";
+        } else {
             playPauseAction = pauseAction;
             contextText = "Running, press pause to pause";
         }
 
+        switch (interval) {
+            case THIRTY:
+                contextText = "Paused for 15 minutes, press resume to resume";
+                timerAction = thirtyMinAction;
+                break;
+            case SIXTY:
+                contextText = "Paused for 30 minutes, press resume to resume";
+                timerAction = oneHourAction;
+                break;
+            case CANCELLED:
+                contextText = "Paused for 1 hour, press resume to resume";
+                timerAction = cancelTimerAction;
+                break;
+            case DISABLED:
+                timerAction = disabledTimer;
+                break;
+            default:
+                timerAction = fifteenMinAction;
+        }
+
+
         Notification notification = new NotificationCompat.Builder(appContext)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setSmallIcon(R.drawable.ic_play_arrow_black_24dp)
                 .setContentTitle("Tilt")
                 .setContentText(contextText)
                 .setPriority(Notification.PRIORITY_MIN)
@@ -146,35 +154,12 @@ public class TiltNotification {
 
 
     private static void initializeActions(Context context) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            pauseAction = createAction("Pause", context, SensorService.class, pauseDrawable,
-                    context.getString(R.string.pause_action_label), ActionType.SERVICE);
 
-            resumeAction = createAction("Play", context, SensorService.class, resumeDrawable,
-                    context.getString(R.string.resume_action_label), ActionType.SERVICE);
-
-            settingsAction = createAction(null, context, TiltActivity.class, settingsDrawable,
-                    context.getString(R.string.settings_action_label), ActionType.ACTIVITY);
-
-            fifteenMinAction = createAction(FIFTEEN, context, null, fifteenDrawable,
-                    context.getString(R.string.snooze1_action_label), ActionType.BROADCAST);
-
-            thirtyMinAction = createAction(THIRTY, context, null, thirtyDrawable,
-                    context.getString(R.string.snooze2_action_label), ActionType.BROADCAST);
-
-            oneHourAction = createAction(ONEHOUR, context, null, oneHourDrawable,
-                    context.getString(R.string.snooze3_action_label), ActionType.BROADCAST);
-
-            cancelTimerAction = createAction(CANCEL_TIMER, context, null, timerOffDrawable,
-                    context.getString(R.string.snooze4_action_label), ActionType.BROADCAST);
-
-            disabledTimer = createAction(null, null, null, fifteenDrawable,
-                    context.getString(R.string.snooze0_action_label), ActionType.DEFAULT);
-        } else {
-            pauseAction = createAction("Pause", context, SensorService.class, pauseDrawable,
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            pauseAction = createAction(Status.PAUSE.name(), context, SensorService.class, pauseDrawable,
                     null, ActionType.SERVICE);
 
-            resumeAction = createAction("Play", context, SensorService.class, resumeDrawable,
+            resumeAction = createAction(Status.RESUME.name(), context, SensorService.class, resumeDrawable,
                     null, ActionType.SERVICE);
 
             settingsAction = createAction(null, context, TiltActivity.class, settingsDrawable,
@@ -194,6 +179,32 @@ public class TiltNotification {
 
             disabledTimer = createAction(null, null, null, fifteenDrawable,
                     null, ActionType.DEFAULT);
+        }
+
+        else {
+            pauseAction = createAction(Status.PAUSE.name(), context, SensorService.class, 0,
+                    context.getString(R.string.pause_action_label), ActionType.SERVICE);
+
+            resumeAction = createAction(Status.RESUME.name(), context, SensorService.class, 0,
+                    context.getString(R.string.resume_action_label), ActionType.SERVICE);
+
+            settingsAction = createAction(null, context, TiltActivity.class, 0,
+                    context.getString(R.string.settings_action_label), ActionType.ACTIVITY);
+
+            fifteenMinAction = createAction(FIFTEEN, context, null, 0,
+                    context.getString(R.string.snooze1_action_label), ActionType.BROADCAST);
+
+            thirtyMinAction = createAction(THIRTY, context, null, 0,
+                    context.getString(R.string.snooze2_action_label), ActionType.BROADCAST);
+
+            oneHourAction = createAction(ONEHOUR, context, null, 0,
+                    context.getString(R.string.snooze3_action_label), ActionType.BROADCAST);
+
+            cancelTimerAction = createAction(CANCEL_TIMER, context, null, 0,
+                    context.getString(R.string.snooze4_action_label), ActionType.BROADCAST);
+
+            disabledTimer = createAction(null, null, null, 0,
+                    context.getString(R.string.snooze0_action_label), ActionType.DEFAULT);
         }
     }
 
@@ -226,29 +237,4 @@ public class TiltNotification {
                 .build();
     }
 
-    public enum ActionType {
-        ACTIVITY,
-        SERVICE,
-        BROADCAST,
-        DEFAULT
-    }
-
-
-
-    private static NotificationCompat.Action setTimerAction(Context context, int interval) {
-
-        switch(interval) {
-            case 30:
-                return thirtyMinAction;
-            case 60:
-                return oneHourAction;
-            case 0:
-                return cancelTimerAction;
-            case -1:
-                return disabledTimer;
-            default:
-                return fifteenMinAction;
-        }
-
-    }
 }

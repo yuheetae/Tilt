@@ -20,6 +20,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
+import static yu.heetae.android.tilt.NotificationStatus.*;
 
 /**
  * Created by yu on 6/23/15.
@@ -34,12 +35,6 @@ public class SensorService extends Service implements SensorEventListener{
     private static final String ONEHOUR = "yu.heetae.android.tilt.ONEHOUR";
     private static final String CANCEL_TIMER = "yu.heetae.android.tilt.CANCEL_TIMER";
     private static final String NOTIFICATION_CANCEL = "yu.heetae.android.tilt.NOTIFICATION_CANCEL";
-
-    //Shared Preferences Variable Keys
-    public static final String PREF_HEADSUP_NOTIFICATION = "headsup_notification";
-    public static final String PREF_VIBRATE = "notification_vibrate";
-    public static final String PREF_PORTRAIT_ORIENTATION = "portrait_orientation";
-    public static final String PREF_LANDSCAPE_ORIENTATION = "landscape_orientation";
 
     //global boolean determining if Service is running
     public static boolean isServiceRunning = false;
@@ -58,13 +53,8 @@ public class SensorService extends Service implements SensorEventListener{
     //Unused variable at this point
     private boolean noSensor = false;
 
-    //Different States Sensor can be in
-    private static Object paused = new Object();
-    private static Object running = new Object();
-    private static Object timed = new Object();
-
     //Sensor's current state
-    public static Object sensorState = running;
+    public static SensorState sensorState = SensorState.RUNNING;
 
     private boolean isScreenOn = true;
 
@@ -131,7 +121,6 @@ public class SensorService extends Service implements SensorEventListener{
         //Register Broadcast Receiver and filter
         registerReceiver(screenReceiver, filter);
 
-
         Notification notif = TiltNotification.createNotification(this);
         startForeground(NOTIFICATION_ID, notif);
 
@@ -139,10 +128,10 @@ public class SensorService extends Service implements SensorEventListener{
         setSensorListeners(mSensorManager);
 
         //Initialize Preference Variable values
-        isHeadsUpEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_HEADSUP_NOTIFICATION, true);
-        isVibrateEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_VIBRATE, true);
-        isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_PORTRAIT_ORIENTATION, true);
-        isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PREF_LANDSCAPE_ORIENTATION, true);
+        isHeadsUpEnabled = SettingsPreferences.getHeadsupSwitch(this);
+        isVibrateEnabled = SettingsPreferences.getVibrateSwitch(this);
+        isPortraitEnabled = SettingsPreferences.getPortraitSwitch(this);
+        //isLandscapeEnabled =
 
         //Get orientation of device
         orientation = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRotation();
@@ -159,20 +148,22 @@ public class SensorService extends Service implements SensorEventListener{
 
         if(intent != null && intent.getAction() != null) {
 
-            if (intent.getAction() == "Pause") {
+            Status value = Status.valueOf(intent.getAction());
+
+            if (value == Status.PAUSE) {
                 Log.i(TAG, "SERVICE IS PAUSED");
                 alarmManager.cancel(pauseInterval);
-                TiltNotification.update(this, intent.getAction(), -1);
+                TiltNotification.update(this, Status.PAUSE, Timer.DISABLED);
 
                 unregisterSensor();
-                sensorState = paused;
-            } else if (intent.getAction() == "Play") {
+                sensorState = SensorState.PAUSED;
+            } else if (value == Status.RESUME) {
                 Log.i(TAG, "SERVICE IS Running");
                 alarmManager.cancel(pauseInterval);
-                sensorState = running;
+                sensorState = SensorState.RUNNING;
                 setSensorListeners(mSensorManager);
                 Log.i(TAG, "Sensor Registered and isSensorOn==True");
-                TiltNotification.update(this, intent.getAction(), 15);
+                TiltNotification.update(this, Status.RESUME, Timer.FIFTEEN); /// original last parameter is fifteen
             }
         }
 
@@ -230,17 +221,8 @@ public class SensorService extends Service implements SensorEventListener{
         mSensorManager.unregisterListener(this);
     }
 
-    //Check Phone Tilt
-    private void checkTilt() {
-        //Get user preferred tilt angle threshold
-        int preferredAngle = PreferenceManager.getDefaultSharedPreferences(this).getInt(TiltActivity.PREF_TILT_ANGLE, -1);
 
-        //set boolean variables depending on if device is in Portrait or Landscape Orientation
-        boolean isPortraitEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(TiltActivity.PREF_PORTRAIT_ORIENTATION, true);
-        boolean isLandscapeEnabled = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(TiltActivity.PREF_LANDSCAPE_ORIENTATION, true);
-
-        //If preferred tilt angle threshold is default value ERROR
-        if(preferredAngle == -1) Log.i(TAG, "PREFERENCE MANAGER NOT WORKING!!!!!!!!");
+    private Double getPortraitAngle() {
 
         //Retrieve Rotation Matrix and Orientation
         SensorManager.getRotationMatrix(mRotationMatrix, null, mAccelValues, mMagnet);
@@ -253,12 +235,39 @@ public class SensorService extends Service implements SensorEventListener{
             } else {
                 mOrientation[1] = (float) (-Math.PI - mOrientation[1]);
             }
-
         }
 
+        return Math.toDegrees(mOrientation[1]);
+    }
+
+    private Double getLandscapeAngle() {
+
+        //Retrieve Rotation Matrix and Orientation
+        SensorManager.getRotationMatrix(mRotationMatrix, null, mAccelValues, mMagnet);
+        SensorManager.getOrientation(mRotationMatrix, mOrientation);
+
+        //Adjust Pitch(rotation about x-axis) based on force of gravity on y-axis
+        if(mGravity[2] < 0) {
+            if (mOrientation[1] > 0) {
+                mOrientation[1] = (float) (Math.PI - mOrientation[1]);
+            } else {
+                mOrientation[1] = (float) (-Math.PI - mOrientation[1]);
+            }
+        }
+
+        return Math.toDegrees(mOrientation[2]);
+    }
+
+
+
+    //Check Phone Tilt
+    private void checkTilt() {
+        //set boolean variables depending on if device is in Portrait or Landscape Orientation
+        boolean isPortraitEnabled = SettingsPreferences.getPortraitSwitch(this);
+
         //Convert orientation for radians to degrees
-        double tiltAnglePortrait = Math.toDegrees(mOrientation[1]);
-        double tiltAngleLandscape = Math.toDegrees(mOrientation[2]);
+        double tiltAnglePortrait = getPortraitAngle();
+        double tiltAngleLandscape = getLandscapeAngle();
 
         //if device orientation is in normal portrait
         if(orientation == Surface.ROTATION_0 && !isPortraitEnabled) {
@@ -266,13 +275,11 @@ public class SensorService extends Service implements SensorEventListener{
                 if (1 / tiltAnglePortrait > 0 && tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
                     Log.i(TAG, "TILT ALERT");
                     tiltAlert();            //post alertNotification that phone is tilted too far
-                    unregisterSensor();     //turn off sensors until alertNotification is dismissed
                 }
             } else {
                 if (tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
-                    Log.i(TAG, "TILT ALERTT");
+                    Log.i(TAG, "TILT ALERT");
                     tiltAlert();
-                    unregisterSensor();
                 }
             }
         }
@@ -283,13 +290,11 @@ public class SensorService extends Service implements SensorEventListener{
                 if (1 / tiltAngleLandscape > 0 && tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
                     Log.i(TAG, "TILT ALERT");
                     tiltAlert();
-                    unregisterSensor();
                 }
             } else {
                 if (tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
                     Log.i(TAG, "TILT ALERTT");
                     tiltAlert();
-                    unregisterSensor();
                 }
             }
         }
@@ -300,7 +305,7 @@ public class SensorService extends Service implements SensorEventListener{
 
         //Create notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_launcher_notification)
+                .setSmallIcon(R.drawable.ic_pause_black_24dp)
                 .setContentTitle("Alert Head Tilt")
                 .setContentText("Your phone is titled to far");
 
@@ -320,6 +325,8 @@ public class SensorService extends Service implements SensorEventListener{
 
         //Post alertNotification
         nm.notify(25, alertNotification);
+
+        unregisterSensor();     //turn off sensors until alertNotification is dismissed
     }
 
 
@@ -354,13 +361,13 @@ public class SensorService extends Service implements SensorEventListener{
             switch(action) {
                 //if user removes tilt alertNotification resume sensors
                 case(NOTIFICATION_CANCEL):
-                    if(sensorState == running) {
+                    if(sensorState == SensorState.RUNNING) {
                         setSensorListeners(mSensorManager);
                         Log.i(TAG, "Notifcation Cancelled, Runing Sensors Now");
                     }
                 //if screen is turned on turn on/off sensor depending on previous state
                 case(Intent.ACTION_SCREEN_ON):
-                    if(sensorState == running) {
+                    if(sensorState == SensorState.RUNNING) {
                         setSensorListeners(mSensorManager);
                     }
                     isScreenOn = true;
@@ -368,7 +375,7 @@ public class SensorService extends Service implements SensorEventListener{
                     break;
                 //if screen is turned off, turn off sensor and save it's previous state
                 case(Intent.ACTION_SCREEN_OFF):
-                    if(sensorState == running) {
+                    if(sensorState == SensorState.RUNNING) {
                         unregisterSensor();
                     }
                     isScreenOn = false;
@@ -376,48 +383,48 @@ public class SensorService extends Service implements SensorEventListener{
                     break;
                 //If timer is finished, turn on sensor if screen is on, change previous sensorstate if screen is off
                 case(TIMER_FINISHED):
-                    sensorState = running;
+                    sensorState = SensorState.RUNNING;
                     if(isScreenOn) {
                         setSensorListeners(mSensorManager);
                     }
-                    TiltNotification.update(context, "Play", 15);
+                    TiltNotification.update(context, Status.RESUME, Timer.FIFTEEN); //check here
                     Log.i(TAG, "Pause is finished");
                     break;
                 //Pause sensor for 15 minutes
                 case(FIFTEEN):
                     unregisterSensor();
-                    TiltNotification.update(context, "Pause", 30);
+                    TiltNotification.update(context, Status.PAUSE, Timer.THIRTY);
                     alarmManager.cancel(pauseInterval);
                     alarmManager.set(AlarmManager.RTC, System.currentTimeMillis()+5000, pauseInterval);
-                    sensorState = timed;
+                    sensorState = SensorState.TIMED;
                     Log.i(TAG, "5 second Pause");
                     break;
                 //Pause sensor for thirty minutes
                 case(THIRTY):
                     unregisterSensor();
-                    TiltNotification.update(context, "Pause", 60);
+                    TiltNotification.update(context, Status.PAUSE, Timer.SIXTY);
                     alarmManager.cancel(pauseInterval);
                     alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 10000, pauseInterval);
-                    sensorState = timed;
+                    sensorState = SensorState.TIMED;
                     Log.i(TAG, "10 second Pause");
                     break;
                 //Pause sensor for one hour
                 case(ONEHOUR):
                     unregisterSensor();
-                    TiltNotification.update(context, "Pause", 0);
+                    TiltNotification.update(context, Status.PAUSE, Timer.CANCELLED);
                     alarmManager.cancel(pauseInterval);
                     alarmManager.set(AlarmManager.RTC, System.currentTimeMillis()+15000, pauseInterval);
-                    sensorState = timed;
+                    sensorState = SensorState.TIMED;
                     Log.i(TAG, "15 second Pause");
                     break;
                 //Cancel current timer and start sensor
                 case(CANCEL_TIMER):
                     alarmManager.cancel(pauseInterval);
-                    sensorState = running;
+                    sensorState = SensorState.RUNNING;
                     if(isScreenOn) {
                         setSensorListeners(mSensorManager);
                     }
-                    TiltNotification.update(context, "Play", 15);
+                    TiltNotification.update(context, Status.RESUME, Timer.FIFTEEN);
                     Log.i(TAG, "TIMER is CANCELLED");
                     break;
             }
@@ -425,3 +432,5 @@ public class SensorService extends Service implements SensorEventListener{
     };
 
 }
+
+

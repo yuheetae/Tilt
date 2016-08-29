@@ -7,7 +7,9 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Surface;
+import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -26,6 +28,7 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     public static final String KEY_ID = "yu.heetae.android.tilt.NOTIFICATION_ID_KEY";
 
     private TextView mAngleTextView;
+    private LinearLayout mLinearLayout;
     private SeekBar mSeekBar;
     private Switch mHeadsupSwitch;
     private Switch mVibrateSwitch;
@@ -41,6 +44,14 @@ public class TiltActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mSeekBar = (SeekBar)findViewById(R.id.seekbar);
         mSeekBar.setMax(45);
         mSeekBar.setOnSeekBarChangeListener(this);
+
+        mLinearLayout = (LinearLayout)findViewById(R.id.manual);
+        mLinearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                
+            }
+        });
 
         //Initialize textview for tilt mAngleTextView
         mAngleTextView = (TextView)findViewById(R.id.tilt_angle);

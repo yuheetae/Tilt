@@ -5,11 +5,12 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Surface;
+import android.content.SharedPreferences;
 
 /**
  * Created by yu on 5/31/16.
  */
-public class SettingsPreferences {
+public class SettingsPreferences{
     //Shared Preference Variable Keys for Settings
     public static final String PREF_TILT_ANGLE = "tilt_angle";
     public static final String PREF_HEADSUP_NOTIFICATION = "headsup_notification";
@@ -86,4 +87,5 @@ public class SettingsPreferences {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(PREF_PORTRAIT_ORIENTATION, false);
     }
+
 }

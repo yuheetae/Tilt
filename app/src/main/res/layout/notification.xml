@@ -15,6 +15,6 @@
         android:id="@+id/notification_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_play_arrow_black_36dp"/>
+        android:src="@drawable/ic_play_arrow_black_24dp"/>
 
 </RelativeLayout>
