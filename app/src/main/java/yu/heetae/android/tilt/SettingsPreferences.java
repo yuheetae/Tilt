@@ -1,11 +1,7 @@
 package yu.heetae.android.tilt;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.Surface;
-import android.content.SharedPreferences;
 
 /**
  * Created by yu on 5/31/16.
