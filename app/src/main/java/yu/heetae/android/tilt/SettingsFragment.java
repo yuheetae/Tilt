@@ -21,7 +21,6 @@ import android.widget.TextView;
  * Created by yu on 8/31/16.
  */
 public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChangeListener {
-    
     private static final String TAG = "tilt.android.heetae.yu";
 
     //Shared Preference Variable Keys for Settings
