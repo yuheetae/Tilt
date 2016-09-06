@@ -21,6 +21,7 @@ import android.widget.TextView;
  * Created by yu on 8/31/16.
  */
 public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChangeListener {
+    
     private static final String TAG = "tilt.android.heetae.yu";
 
     //Shared Preference Variable Keys for Settings
@@ -42,7 +43,7 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        
+
         //Start SensorService to detect phone tilt
         if(!SensorService.isServiceRunning) {
             Intent i = new Intent(getActivity().getApplicationContext(), SensorService.class);
