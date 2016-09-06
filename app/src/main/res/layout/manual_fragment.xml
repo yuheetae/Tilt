@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#1DE9B6">
+
+    <TextView
+        android:id="@+id/text_degree_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/linearlayout_control_buttons"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="24dp"
+        android:text="56"
+        android:textColor="#FFFFFF"
+        android:textSize="120sp"/>
+
+    <TextView
+        android:id="@+id/text_degree_symbol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/text_degree_number"
+        android:layout_toRightOf="@id/text_degree_number"
+        android:text="@string/degree_symbol"
+        android:textColor="#FFFFFF"
+        android:textSize="120sp"/>
+
+    <LinearLayout
+        android:id="@id/linearlayout_control_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_confirmation"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#1DE9B6"
+            android:text="@string/start_button"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"/>
+
+        <Button
+            android:id="@+id/button_cancel"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#1DE9B6"
+            android:text="@string/cancel_button"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

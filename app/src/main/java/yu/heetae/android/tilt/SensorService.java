@@ -19,7 +19,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
-import static yu.heetae.android.tilt.NotificationStatus.*;
+import static yu.heetae.android.tilt.NotificationStatus.Timer;
+import static yu.heetae.android.tilt.NotificationStatus.Status;
+import static yu.heetae.android.tilt.NotificationStatus.SensorState;
 
 /**
  * Created by yu on 6/23/15.
@@ -70,7 +72,6 @@ public class SensorService extends Service implements SensorEventListener{
     public static boolean isHeadsUpEnabled;
     public static boolean isVibrateEnabled;
     public static boolean isPortraitEnabled;
-    public static boolean isLandscapeEnabled;
 
     private int orientation;
 
@@ -221,7 +222,7 @@ public class SensorService extends Service implements SensorEventListener{
     }
 
 
-    private Double getPortraitAngle() {
+    private Double getAngle() {
 
         //Retrieve Rotation Matrix and Orientation
         SensorManager.getRotationMatrix(mRotationMatrix, null, mAccelValues, mMagnet);
@@ -239,25 +240,6 @@ public class SensorService extends Service implements SensorEventListener{
         return Math.toDegrees(mOrientation[1]);
     }
 
-    private Double getLandscapeAngle() {
-
-        //Retrieve Rotation Matrix and Orientation
-        SensorManager.getRotationMatrix(mRotationMatrix, null, mAccelValues, mMagnet);
-        SensorManager.getOrientation(mRotationMatrix, mOrientation);
-
-        //Adjust Pitch(rotation about x-axis) based on force of gravity on y-axis
-        if(mGravity[2] < 0) {
-            if (mOrientation[1] > 0) {
-                mOrientation[1] = (float) (Math.PI - mOrientation[1]);
-            } else {
-                mOrientation[1] = (float) (-Math.PI - mOrientation[1]);
-            }
-        }
-
-        return Math.toDegrees(mOrientation[2]);
-    }
-
-
 
     //Check Phone Tilt
     private void checkTilt() {
@@ -265,39 +247,21 @@ public class SensorService extends Service implements SensorEventListener{
         boolean isPortraitEnabled = SettingsPreferences.getPortraitSwitch(this);
 
         //Convert orientation for radians to degrees
-        double tiltAnglePortrait = getPortraitAngle();
-        double tiltAngleLandscape = getLandscapeAngle();
+        double tiltAngle = getAngle();
 
-        //if device orientation is in normal portrait
-        if(orientation == Surface.ROTATION_0 && !isPortraitEnabled) {
-            if (tiltAnglePortrait == 0) {
-                if (1 / tiltAnglePortrait > 0 && tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
-                    Log.i(TAG, "TILT ALERT");
-                    tiltAlert();            //post alertNotification that phone is tilted too far
-                }
-            } else {
-                if (tiltAnglePortrait > preferredTiltAngle && tiltAnglePortrait < 30) {
-                    Log.i(TAG, "TILT ALERT");
-                    tiltAlert();
-                }
+        if (tiltAngle == 0) {
+            if (1 / tiltAngle > 0 && tiltAngle > preferredTiltAngle && tiltAngle < 30) {
+                Log.i(TAG, "TILT ALERT");
+                tiltAlert();            //post alertNotification that phone is tilted too far
             }
-        }
-
-        //if device orientation is in either normal or reverse landscape
-        else if(orientation == Surface.ROTATION_90 || orientation == Surface.ROTATION_270 && !isLandscapeEnabled) {
-            if (tiltAnglePortrait == 0) {
-                if (1 / tiltAngleLandscape > 0 && tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
-                    Log.i(TAG, "TILT ALERT");
-                    tiltAlert();
-                }
-            } else {
-                if (tiltAngleLandscape > preferredTiltAngle && tiltAngleLandscape < 30) {
-                    Log.i(TAG, "TILT ALERTT");
-                    tiltAlert();
-                }
+        } else {
+            if (tiltAngle > preferredTiltAngle && tiltAngle < 30) {
+                Log.i(TAG, "TILT ALERT");
+                tiltAlert();
             }
         }
     }
+
 
     //Alert user with a notification that device is tilted beyond threshold
     public void tiltAlert() {

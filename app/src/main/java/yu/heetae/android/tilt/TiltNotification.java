@@ -192,19 +192,19 @@ public class TiltNotification {
                     context.getString(R.string.settings_action_label), ActionType.ACTIVITY);
 
             fifteenMinAction = createAction(FIFTEEN, context, null, 0,
-                    context.getString(R.string.snooze1_action_label), ActionType.BROADCAST);
+                    context.getString(R.string.snooze_fifteen), ActionType.BROADCAST);
 
             thirtyMinAction = createAction(THIRTY, context, null, 0,
-                    context.getString(R.string.snooze2_action_label), ActionType.BROADCAST);
+                    context.getString(R.string.snooze_thirty), ActionType.BROADCAST);
 
             oneHourAction = createAction(ONEHOUR, context, null, 0,
-                    context.getString(R.string.snooze3_action_label), ActionType.BROADCAST);
+                    context.getString(R.string.snooze_onehour), ActionType.BROADCAST);
 
             cancelTimerAction = createAction(CANCEL_TIMER, context, null, 0,
-                    context.getString(R.string.snooze4_action_label), ActionType.BROADCAST);
+                    context.getString(R.string.cancel_snooze), ActionType.BROADCAST);
 
             disabledTimer = createAction(null, null, null, 0,
-                    context.getString(R.string.snooze0_action_label), ActionType.DEFAULT);
+                    context.getString(R.string.snooze_fifteen), ActionType.DEFAULT);
         }
     }
 
