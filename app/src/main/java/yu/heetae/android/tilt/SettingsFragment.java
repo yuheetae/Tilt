@@ -1,13 +1,20 @@
 package yu.heetae.android.tilt;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import static yu.heetae.android.tilt.NotificationStatus.SensorState;
 
 /**
  * Created by yu on 8/31/16.
@@ -31,6 +40,7 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
     public static final String PREF_LANDSCAPE_ORIENTATION = "landscape_orientation";
 
     public static final String KEY_ID = "yu.heetae.android.tilt.NOTIFICATION_ID_KEY";
+    public static final String MENU_ITEM_BUTTON = "menu_item_resume_pause_button";
 
     private TextView mAngleTextView;
     private LinearLayout mLinearLayout;
@@ -38,13 +48,28 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
     private Switch mHeadsupSwitch;
     private Switch mVibrateSwitch;
     private Switch mPortraitSwitch;
+    private MenuItem mStateChange;
+
+    private Intent mPauseIntent;
+    private Intent mResumeIntent;
+
+    private static boolean sIsVisible = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+        Log.i(TAG, "onCreate()\tSettingsFragment");
+
+        mPauseIntent = new Intent(getActivity(), SensorService.class);
+        mPauseIntent.setAction(NotificationStatus.Status.PAUSE.name());
+
+        mResumeIntent = new Intent(getActivity(), SensorService.class);
+        mResumeIntent.setAction(NotificationStatus.Status.RESUME.name());
 
         //Start SensorService to detect phone tilt
-        if(!SensorService.isServiceRunning) {
+        if(SensorService.sensorState != SensorState.RUNNING) {
             Intent i = new Intent(getActivity().getApplicationContext(), SensorService.class);
             getActivity().startService(i);
             //Log.i(TAG, "Service Started From TiltActivity");
@@ -90,7 +115,7 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState) {
         View v = inflater.inflate(R.layout.settings_fragment, container, false);
 
-        Log.i(TAG, "onCreateView()\t Main Fragment");
+        Log.i(TAG, "onCreateView()\tSettingsFragment");
 
         //Initialize tilt mAngleTextView seekbar
         mSeekBar = (SeekBar)v.findViewById(R.id.seekbar);
@@ -196,10 +221,65 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart()\tSettingsFragment");
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume()\tSettingsFragment");
         mSeekBar.setProgress(SettingsPreferences.getTiltAngle(getActivity()));
         mAngleTextView.setText(SettingsPreferences.getTiltAngle(getActivity()) + "\u00B0");
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(messageReceiver, new IntentFilter(MENU_ITEM_BUTTON));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(messageReceiver);
+        Log.i(TAG, "onPause()\tSettingsFragment");
+    }
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop()\tSettingsFragment");
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_main, menu);
+        Log.i(TAG, "onCreateOptionsMenu()\tSettingsFragment");
+
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        mStateChange = menu.findItem(R.id.menu_item_change_state);
+        Log.i(TAG, "onPrepareOptionsMenu()\tSettingsFragment");
+
+        updateMenuItem();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.menu_item_change_state:
+                if(SensorService.sensorState == SensorState.RUNNING) {
+                    getActivity().startService(mPauseIntent);
+                    mStateChange.setIcon(R.drawable.ic_play_arrow_white_24dp);
+                } else {
+                    getActivity().startService(mResumeIntent);
+                    mStateChange.setIcon(R.drawable.ic_pause_white_24dp);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     //Change text displaying tilt mAngleTextView when seekbar progress is changed
@@ -219,4 +299,25 @@ public class SettingsFragment extends Fragment implements SeekBar.OnSeekBarChang
 
     }
 
+    public void updateMenuItem() {
+        if(SensorService.sensorState == SensorState.RUNNING) {
+            mStateChange.setIcon(R.drawable.ic_pause_white_24dp);
+        } else {
+            mStateChange.setIcon(R.drawable.ic_play_arrow_white_24dp);
+        }
+    }
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                case MENU_ITEM_BUTTON:
+                    updateMenuItem();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 }

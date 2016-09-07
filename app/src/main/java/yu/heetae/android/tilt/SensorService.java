@@ -16,6 +16,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -37,8 +38,12 @@ public class SensorService extends Service implements SensorEventListener{
     private static final String CANCEL_TIMER = "yu.heetae.android.tilt.CANCEL_TIMER";
     private static final String NOTIFICATION_CANCEL = "yu.heetae.android.tilt.NOTIFICATION_CANCEL";
 
+    public static final String MENU_ITEM_BUTTON = "menu_item_resume_pause_button";
+
+
     //global boolean determining if Service is running
-    public static boolean isServiceRunning = false;
+    //public static boolean isServiceRunning = false;
+    //here ho
 
     //Sensor & SensorManger
     private Sensor mSensor;
@@ -55,7 +60,9 @@ public class SensorService extends Service implements SensorEventListener{
     private boolean noSensor = false;
 
     //Sensor's current state
-    public static SensorState sensorState = SensorState.RUNNING;
+    //public static SensorState sensorState = SensorState.RUNNING;
+    //here ho
+    public static SensorState sensorState = SensorState.PAUSED;
 
     private boolean isScreenOn = true;
 
@@ -119,7 +126,8 @@ public class SensorService extends Service implements SensorEventListener{
         filter.addAction(CANCEL_TIMER);
 
         //Register Broadcast Receiver and filter
-        registerReceiver(screenReceiver, filter);
+        //registerReceiver(screenReceiver, filter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(screenReceiver, filter);
 
         Notification notif = TiltNotification.createNotification(this);
         startForeground(NOTIFICATION_ID, notif);
@@ -141,12 +149,16 @@ public class SensorService extends Service implements SensorEventListener{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(!isServiceRunning) isServiceRunning = true;
+        //here ho
+        //if(!isServiceRunning) isServiceRunning = true;
+        if(sensorState == SensorState.PAUSED) sensorState = SensorState.RUNNING;
+
         Log.i(TAG, "onStartCommand Called");
 
         pauseInterval = PendingIntent.getBroadcast(this, 0, i, 0);
 
         if(intent != null && intent.getAction() != null) {
+            Log.i(TAG, "WHATUUUUPPP IMMM HERRREEEE");
 
             Status value = Status.valueOf(intent.getAction());
 
@@ -165,6 +177,8 @@ public class SensorService extends Service implements SensorEventListener{
                 Log.i(TAG, "Sensor Registered and isSensorOn==True");
                 TiltNotification.update(this, Status.RESUME, Timer.FIFTEEN); /// original last parameter is fifteen
             }
+
+            sendMessage();
         }
 
         return START_STICKY;
@@ -201,9 +215,12 @@ public class SensorService extends Service implements SensorEventListener{
     @Override
     public void onDestroy() {
         unregisterSensor();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(screenReceiver);
         Log.i(TAG, "Service Destroyed");
         stopForeground(true);
-        isServiceRunning = false;
+        //here ho
+        //isServiceRunning = false;
+        sensorState = SensorState.PAUSED;
         super.onDestroy();
     }
 
@@ -312,6 +329,11 @@ public class SensorService extends Service implements SensorEventListener{
                 orientation = Surface.ROTATION_270;
                 break;
         }
+    }
+
+    private void sendMessage() {
+        Intent i = new Intent(MENU_ITEM_BUTTON);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 
     //SensorService Broadcast Receiver
