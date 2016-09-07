@@ -50,6 +50,7 @@ public class ManualFragment extends Fragment implements SensorEventListener{
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setShowHideAnimationEnabled(false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
     }
 
